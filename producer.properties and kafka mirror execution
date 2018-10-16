@@ -1,0 +1,24 @@
+this is configuration file is used for mentioning target kafka cluster details for mirroring
+
+------------------------------------------
+bootstrap.servers=x.x.x.x:9092     ##just define the target kafka cluster's ips(broker ips)
+acks=1
+batch.size=100
+------------------------------------------
+
+partitioning
+--------------
+you can maually create a topic and define partitions for that particular topic in target cluster
+or else
+mirror will create the topics with predefined num.partition in server.prop of the kafka in target cluster
+
+
+mirror_maker_command
+------------------------
+./kafka-mirror-maker.sh --consumer.config /opt/kafka/bin/consumer.properties --producer.config /opt/kafka/bin/producer.properties --whitelist mirror &
+
+--consumer.config--> is used to define path till consumer prop
+--producer.config--> is used to define path till producer prop
+--whitelist--> is used to define the list of topics that are to be mirrored. Use --whitelist=".*" to mirror all topics
+--blacklist--> is used to define list of topics that are not to be mirrored.
+&--> is used to run mirror process in background
