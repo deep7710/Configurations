@@ -1,5 +1,7 @@
 this is configuration file is used for mentioning target kafka cluster details for mirroring
 
+kafka version 0.10.2.2
+
 ------------------------------------------
 bootstrap.servers=x.x.x.x:9092     ##just define the target kafka cluster's ips(broker ips)
 acks=1
