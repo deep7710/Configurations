@@ -1,0 +1,61 @@
+#!/bin/bash
+
+if [ "`find /var/run/ -name kafka`" != "/var/run/kafka" ];
+then
+ mkdir /var/run/kafka
+else
+ echo "Processing"
+fi
+
+case "$1" in 
+start)
+   /bin/sh -c '/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /opt/kafka/kafka.log 2>&1' &
+   echo "starting"
+   sleep 25
+   PID=`netstat -ntlp|grep 9092|awk '{print $7}'|tr -d '/java'`
+   echo $PID>/var/run/kafka/kafka.pid 2>&1
+   if [[ $(cat /opt/kafka/kafka.log|grep FATAL) ]]; then
+    echo "kindly check kafka logs for FATAL errors at /opt/kafka/kafka.log"
+   elif [[ $(cat /opt/kafka/kafka.log |grep "/opt/kafka/bin/kafka-run-class.sh: line 280: exec: java: not found") ]]; then
+     echo "Install java"
+     exit 1;
+   else
+    echo "started"
+   fi
+   ;;
+stop)
+   /bin/sh -c '/opt/kafka/bin/kafka-server-stop.sh > /opt/kafka/kafka.log 2>&1' &
+   sleep 7
+   rm /var/run/kafka/kafka.pid
+   ;;
+restart)
+   echo "stopping"
+   /bin/sh -c '/opt/kafka/bin/kafka-server-stop.sh > /opt/kafka/kafka.log 2>&1' &
+   sleep 15
+   echo "starting"
+   /bin/sh -c '/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /opt/kafka/kafka.log 2>&1' &
+   sleep 25
+   PID=`netstat -ntlp|grep 9092|awk '{print $7}'|tr -d '/java'`
+   echo $PID>/var/run/kafka/kafka.pid 2>&1
+   if [[ $(cat /opt/kafka/kafka.log|grep FATAL) ]]; then
+    echo "kindly check kafka logs for FATAL errors at /opt/kafka/kafka.log"
+   elif [[ $(cat /opt/kafka/kafka.log |grep "/opt/kafka/bin/kafka-run-class.sh: line 280: exec: java: not found") ]]; then
+     echo "failed to start kafka. Install java!!!"
+     exit 1;
+   else
+    echo "started"
+   fi
+   ;;
+status)
+   if [ -e /var/run/kafka/kafka.pid ]; then
+      echo kafka is running, pid=`cat /var/run/kafka/kafka.pid`
+   else
+      echo kafka is NOT running
+      exit 1
+   fi
+   ;;
+*)
+   echo "Usage: $0 {start|stop|status|restart}"
+esac
+
+exit 0 
